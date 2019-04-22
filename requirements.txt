@@ -2,6 +2,7 @@ certifi==2019.3.9
 chardet==3.0.4
 Click==7.0
 Flask==1.0.2
+Flask-WTF==0.14.2
 foreman==0.9.7
 gunicorn==19.9.0
 idna==2.8
@@ -12,3 +13,4 @@ requests==2.21.0
 requests-futures==0.9.9
 urllib3==1.24.2
 Werkzeug==0.15.2
+WTForms==2.2.1
