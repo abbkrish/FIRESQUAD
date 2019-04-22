@@ -2,13 +2,29 @@ from flask import Flask, render_template, redirect, url_for, flash, request, Ses
 from datetime import datetime
 from RegistrationForm import RegistrationForm
 import sqlite3 as sql
+import pyrebase
 
 app = Flask(__name__)
 sess = Session()
 
+config = {
+    "apiKey": "AIzaSyDYVo10h_DYJh-zmxCU4wp3AAjOesQ_T4c",
+    "authDomain": "firesquad-37ddd.firebaseapp.com",
+    "databaseURL": "https://firesquad-37ddd.firebaseio.com",
+    "projectId": "firesquad-37ddd",
+    "storageBucket": "firesquad-37ddd.appspot.com",
+    "messagingSenderId": "987773115186"
+}
+
+firebase = pyrebase.initialize_app(config)
+auth = firebase.auth()
+database=firebase.database()
+
+
 
 @app.route("/")
 def hello():
+    #database.child("user").set("test")
     if 'username' not in sess:
         return "Hello World! " + "<br>" + str(datetime.now())
     return "Hello " + sess['username'] + "<br>" + str(datetime.now())
@@ -22,17 +38,19 @@ def register():
         try:
             username = form.username.data
             email = form.email.data
-            with sql.connect("pythonsqlite.db") as con:
-                cur = con.cursor()
-                cur.execute("INSERT INTO User (username,email) VALUES (?, ?)", (username, email))
-                con.commit()
-                print("inserted into table")
-                msg = "Record successfully added"
+            database.child("User").child(username).set(username)
+
+            #with sql.connect("pythonsqlite.db") as con:
+            #    cur = con.cursor()
+            #    cur.execute("INSERT INTO User (username,email) VALUES (?, ?)", (username, email))
+            #    con.commit()
+            #    print("inserted into table")
+            #    msg = "Record successfully added"
 
 
         except:
             print("Connection Error")
-            con.rollback()
+            #con.rollback()
             msg = "error in insert operation"
 
         # db_session.add(user)
@@ -45,8 +63,11 @@ def register():
 def login():
     error = None
     if request.method == 'POST':
-        user = query_db('select * from User where username = ?',
-                        [request.form['username']], one=True)
+
+        user = database.child("User").child(request.form['username']).get()
+        print("username:"+str(user))
+        #user = query_db('select * from User where username = ?',
+        #                [request.form['username']], one=True)
         if user is None:
             print('No such user')
         else:
