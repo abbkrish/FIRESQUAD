@@ -4,10 +4,13 @@ from RegistrationForm import RegistrationForm
 import sqlite3 as sql
 
 app = Flask(__name__)
+sess = Session()
 
 
-@app.route("/hello")
+@app.route("/")
 def hello():
+    if 'username' not in sess:
+        return "Hello World! " + "<br>" + str(datetime.now())
     return "Hello " + sess['username'] + "<br>" + str(datetime.now())
 
 
@@ -68,7 +71,6 @@ def query_db(query, args=(), one=False):
 
 
 if __name__ == "__main__":
-    sess = Session()
     app.secret_key = 'super secret key'
     app.config['SESSION_TYPE'] = 'filesystem'
     app.run()
