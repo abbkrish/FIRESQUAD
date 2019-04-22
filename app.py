@@ -65,10 +65,10 @@ def login():
     if request.method == 'POST':
 
         user = database.child("User").child(request.form['username']).get()
-        print("username:"+str(user))
+        print("username:"+str(user.val()))
         #user = query_db('select * from User where username = ?',
         #                [request.form['username']], one=True)
-        if user is None:
+        if user.val() is None:
             print('No such user')
         else:
             print(request.form['username'] + ' exists')
