@@ -1,9 +1,15 @@
 {% from "_formhelpers.html" import render_field %}
-<form method=post>
+  <form action = "http://localhost:5000/uploader" method = "POST"
+         enctype = "multipart/form-data">
+         <input type = "file" name = "file" />
+         <input type = "submit" name = "btn" value="upload"/>
+  </form>
+<form method=post action="http://localhost:5000/register" enctype=multipart/form-data>
   <dl>
     {{ render_field(form.username) }}
     {{ render_field(form.email) }}
     {{ render_field(form.confirm) }}
   </dl>
-  <p><input type=submit value=Register>
+    <p><input name="btn" type="submit" value="Register">
 </form>
+

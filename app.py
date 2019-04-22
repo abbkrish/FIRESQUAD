@@ -3,11 +3,20 @@ from datetime import datetime
 from RegistrationForm import RegistrationForm
 import sqlite3 as sql
 import pyrebase
+from werkzeug.utils import secure_filename
+import os
+import random
+
+UPLOAD_FOLDER = 'uploads'
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+
 
 app = Flask(__name__)
 app.secret_key = 'firesquad_intern_match'
 app.config['SESSION_TYPE'] = 'filesystem'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 sess = Session()
+
 
 config = {
     "apiKey": "AIzaSyDYVo10h_DYJh-zmxCU4wp3AAjOesQ_T4c",
@@ -23,6 +32,39 @@ auth = firebase.auth()
 database=firebase.database()
 
 
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/uploader', methods = ['GET', 'POST'])
+def upload_file(username=''):
+    if request.method == 'POST' and request.form['btn'] == 'upload':
+        print("in upload methiod ")
+    # check if the post request has the file part
+        print(request.files)
+        if 'file' not in request.files:
+            print("no files ")
+            flash('No file part')
+        # return redirect(request.url)
+        file = request.files['file']
+        print("the file ", file)
+    # if user does not select file, browser also
+    # submit an empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+            # return redirect(request.url)
+        if file and allowed_file(file.filename):
+            random_no = random.randint(0, 10000)
+            filename =  str(random_no) +  '.' + file.filename.rsplit('.', 1)[1].lower()
+            sess['photo_id'] = filename
+            # secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            # return redirect(url_for('uploaded_file',
+            # filename=filename))
+    form = RegistrationForm(request.form)
+    return render_template('register.html', form=form)
+
+
 
 @app.route("/")
 def hello():
@@ -35,12 +77,14 @@ def hello():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegistrationForm(request.form)
-    if request.method == 'POST':
+    if request.method == 'POST' and request.form['btn'] == 'Register':
         # user = User(form.username.data, form.email.data)
         try:
             username = form.username.data
             email = form.email.data
-            database.child("User").child(username).set(username)
+            photo_id = sess['photo_id']
+            database.child("User").child(username).child("name").set(username)
+            database.child("User").child(username).child("pic").set(photo_id)
 
             #with sql.connect("pythonsqlite.db") as con:
             #    cur = con.cursor()
@@ -48,6 +92,7 @@ def register():
             #    con.commit()
             #    print("inserted into table")
             #    msg = "Record successfully added"
+            #upload_file(username)
 
 
         except:
